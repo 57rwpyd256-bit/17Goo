@@ -1,6 +1,7 @@
 <!doctype html>
+Erkhes ees Goo d zoriulan buteev 
 <html lang="mn">
-<head>
+<head> 
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Goomarald — Special</title>
@@ -323,42 +324,29 @@ async function showMessageAnimated() {
   const msgCard = document.getElementById('msgCard');
   msgCard.classList.add('pop');
 
-  // get the source text (prefer current editArea value if non-empty)
-  const raw = (editArea && editArea.value && editArea.value.trim()) ? editArea.value.trim() : editArea.placeholder || editArea.value || '';
-  // if editArea empty use default textarea content (we set default in textarea), else use that
-  const textToUse = raw || document.getElementById('editArea').textContent || document.querySelector('#editArea').value || '';
-  const words = textToUse.replace(/\r/g,'').split(/\s+/); // split by whitespace
-  msgText.innerHTML = ''; // clear
+  // choose source text: prefer editArea if non-empty, otherwise the textarea default value (we set it)
+  const source = (editArea.value && editArea.value.trim()) ? editArea.value.trim() : editArea.placeholder || editArea.value;
+  const textToUse = source || editArea.value || '';
+  const words = textToUse.replace(/\r/g,'').split(/\s+/);
+  msgText.innerHTML = '';
   msgText.classList.add('visible');
 
-  // create reveal container and caret
   const reveal = document.createElement('span'); reveal.className = 'msg-reveal';
   msgText.appendChild(reveal);
   const caret = document.createElement('span'); caret.className = 'msg-caret'; reveal.appendChild(caret);
-
-  // show reveal container (pop)
   requestAnimationFrame(()=> reveal.classList.add('show'));
 
-  // simple word-by-word loop
-  const baseDelay = 240; // ms per word approx
+  const baseDelay = 220;
   for (let i = 0; i < words.length; i++) {
     const w = words[i];
-    // add word and a space
     const node = document.createTextNode((i === 0 ? '' : ' ') + w);
     reveal.insertBefore(node, caret);
-
-    // occasionally spawn sparkle near caret
     if (Math.random() > 0.6) spawnSparkleNearCaret();
-
-    // slight variation to make it feel natural
     const jitter = Math.floor(Math.random() * 120) - 40;
-    await new Promise(res => setTimeout(res, Math.max(60, baseDelay + jitter)));
-
-    // scroll msgText to keep caret visible if overflow
+    await new Promise(res => setTimeout(res, Math.max(50, baseDelay + jitter)));
     msgText.scrollTop = msgText.scrollHeight;
   }
 
-  // done: remove caret, celebrate
   caret.remove();
   spawnConfetti(48);
   const r = panel.getBoundingClientRect();
@@ -367,13 +355,11 @@ async function showMessageAnimated() {
 
 /* spawn sparkle near caret helper */
 function spawnSparkleNearCaret(){
-  // insert zero-width marker to measure caret position
   const reveal = document.querySelector('.msg-reveal');
   if (!reveal) return;
   const caret = reveal.querySelector('.msg-caret');
   if (!caret) return;
-  const mark = document.createElement('span');
-  mark.textContent = '\u200b';
+  const mark = document.createElement('span'); mark.textContent = '\u200b';
   reveal.insertBefore(mark, caret);
   const rect = mark.getBoundingClientRect();
   const panelRect = panel.getBoundingClientRect();
@@ -381,17 +367,12 @@ function spawnSparkleNearCaret(){
   const sy = rect.top + rect.height/2 - panelRect.top;
   mark.remove();
 
-  const dot = document.createElement('div');
-  dot.className = 'sparkle-dot';
-  dot.style.left = sx + 'px';
-  dot.style.top = sy + 'px';
+  const dot = document.createElement('div'); dot.className = 'sparkle-dot';
+  dot.style.left = sx + 'px'; dot.style.top = sy + 'px';
   document.getElementById('sparkles').appendChild(dot);
-  requestAnimationFrame(()=> {
-    dot.style.transform = 'translate(-50%,-50%) scale(1)';
-    dot.style.opacity = '1';
-  });
+  requestAnimationFrame(()=> { dot.style.transform = 'translate(-50%,-50%) scale(1)'; dot.style.opacity = '1'; });
   setTimeout(()=> { dot.style.opacity = '0'; dot.style.transform = 'translate(-50%,-50%) scale(.4)'; }, 260);
-  setTimeout(()=> { try{ dot.remove(); }catch(e){} }, 720);
+  setTimeout(()=> { try{ dot.remove() }catch(e){} }, 720);
 }
 
 /* wire openMsg to animated reveal */
